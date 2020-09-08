@@ -1,1 +1,1 @@
-# A collection of simple python programs for personal use.
+# Simple Python programs
