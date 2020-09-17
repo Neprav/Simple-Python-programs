@@ -11,4 +11,6 @@
 
 Инвестиционный калькулятор. 
 
+![invest-calc.JPG](https://raw.githubusercontent.com/Neprav/Simple-Python-programs/master/screens/invest-calc.JPG)
+
 **Использованные модули:** Tkinter
