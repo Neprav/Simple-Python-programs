@@ -1,16 +1,38 @@
 import tkinter as tk
 
-def calculate():	
-	period = int(ent_period.get())
+def calculate():
+	try:
+		current_assets = int(ent_start_amount.get())
+	except:
+		current_assets = 0
+	try:
+		annual_return = int(ent_annual_return.get())
+	except:
+		annual_return = 0
+	try:
+		addition = int(ent_addition.get())
+	except:
+		addition = 0
+	try:
+		period = int(ent_period.get())
+		if period < 1:
+			ent_current_assets['fg'] = 'red'
+			ent_current_assets['text'] = 'Ошибка!'
+			ent_profit['text'] = ''
+			return
+	except:
+		ent_current_assets['fg'] = 'red'
+		ent_current_assets['text'] = 'Ошибка!'
+		ent_profit['text'] = ''	
+		return
+
 	months = period*12
-	current_assets = int(ent_start_amount.get())
-	annual_return = int(ent_annual_return.get())
-	addition = int(ent_addition.get())
 	for i in range(months):		
 		profit = current_assets*annual_return/100/12
 		current_assets += addition + profit
-	ent_current_assets['text'] = f'{round(current_assets)} руб.'
-	ent_profit['text'] = f'{round(profit)} руб.'
+	ent_current_assets['text'] = '{:,}'.format(round(current_assets)).replace(',', ' ')+' руб.'
+	ent_current_assets['fg'] = 'black'
+	ent_profit['text'] = '{:,}'.format(round(profit)).replace(',', ' ')+' руб.'
 
 def clear():
 	ent_start_amount.delete(0, tk.END)
