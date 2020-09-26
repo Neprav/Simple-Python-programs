@@ -1,8 +1,8 @@
 from pathlib import *
 import shutil
 
-main_dir = Path('H:\\Тест')
-backup_dir = Path('H:\\Тест - бэкап')
+main_dir = Path('контрольный каталог')
+backup_dir = Path('каталог для бэкапа')
 len_main = len(main_dir.parts)
 len_backup = len(backup_dir.parts)
 count_f, count_d = 0, 0
@@ -28,7 +28,10 @@ def dipping (path):
 		else:
 			copy_file = path_assemble(pth)
 			if not copy_file.exists() or pth.stat().st_mtime > copy_file.stat().st_mtime:
-				shutil.copy(pth, copy_file)				
+				try:
+					shutil.copy(pth, copy_file)
+				except PermissionError:
+					print(f'Ошибка доступа! "{pth.name}"')
 				print(f'Скопирован файл "{pth.name}"')
 				count_f += 1
 
