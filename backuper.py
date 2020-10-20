@@ -1,15 +1,20 @@
 from pathlib import *
 import shutil
 
-main_dir = Path('контрольный каталог')
-backup_dir = Path('каталог для бэкапа')
-len_main = len(main_dir.parts)
-len_backup = len(backup_dir.parts)
+
+dirs = [{
+'main_dir': Path('I:\\САЙТЫ ДЛЯ ФОТОГРАФОВ'),
+'backup_dir': Path('H:\\Б - САЙТЫ ДЛЯ ФОТОГРАФОВ')},
+{
+'main_dir': Path('E:\\PYTHON'),
+'backup_dir': Path('H:\\Б - Python')},
+]
+
 count_f, count_d = 0, 0
 
 def path_assemble(pth):
 	path = backup_dir
-	parts = list(pth.parts[len_main:])
+	parts = list(pth.parts[len_main_dir:])
 	for part in parts: 
 		path = path / part
 	return path
@@ -35,10 +40,15 @@ def dipping (path):
 				print(f'Скопирован файл "{pth.name}"')
 				count_f += 1
 
-dipping(main_dir)
+
+for item in dirs:
+	main_dir = item['main_dir']
+	backup_dir = item['backup_dir']
+	len_main_dir = len(main_dir.parts)
+	dipping(main_dir)
+
 
 print(f'Создано {count_d} папок, скопировано {count_f} файлов')
-
 
 
 
