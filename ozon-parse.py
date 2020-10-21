@@ -33,22 +33,44 @@ def get_favorites():
 	favorites_id.remove('1984-173401194')
 	return favorites_id
 	
+def get_price(soup, selector):	
+	try:
+		price = soup.select_one(selector).text.split()[0] + ' руб.'
+	except:
+		price = 'цена не найдена'
+	return price
 
-favorites_id = get_favorites()
+
+# favorites_id = get_favorites()
 
 # for fav_id in favorites_id:
 # 	url = MAIN_URL + str(fav_id)
 # 	print(url)	
 # 	html = get_html(url)
 
-url = MAIN_URL + str(favorites_id[0])
+# url = MAIN_URL + str(favorites_id[0])
+
+url = MAIN_URL + '143714909'
 html = get_html(url)
 soup = bs(html, 'lxml')
 
 title = soup.find('h1').text
-price = soup.select_one('span.b3d.b3n5').text.split()[0] + ' руб.'
+
+sold_out = soup.find('h2', text=re.compile('товар закончился'))
+
+if sold_out:
+	another_seller = soup.find('p', text=re.compile('есть у другого продавца'))
+	if another_seller:
+		price = get_price(soup, 'span.b5o4')
+	else:
+		price = 'нет в наличии'
+else:
+	price = get_price(soup, 'span.b3d.b3n5')
+
+
 print(title)
 print(price)
+
 
 
 
