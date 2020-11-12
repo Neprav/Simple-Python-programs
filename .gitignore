@@ -156,3 +156,10 @@ $RECYCLE.BIN/
 
 ### Personal ###
 Behance-parse/
+
+# Data parsing files
+*.csv
+*.xlsx
+*.json
+
+
