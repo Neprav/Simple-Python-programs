@@ -2,16 +2,18 @@ from pathlib import *
 import requests
 from bs4 import BeautifulSoup as bs
 import re
-from datetime import date
-# получаем класс date из модуля datetime
-import csv
+from datetime import date, datetime
+import xlrd
+import xlsxwriter
+
 
 HTML_FILE = 'G:\\ozon\\OZON.ru-favorites.html'
 MAIN_URL = 'https://www.ozon.ru/context/detail/id/'
 HEADERS = {
 	'user-agent' : 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36',
-	'accept-language': 'ru',
-}
+	'accept-language': 'ru'}
+XL_FILE = 'my-favorites-ozon.xlsx'
+
 
 
 def get_html_from_file(html_file):
@@ -41,32 +43,50 @@ def get_price(soup, selector):
 		price = 'цена не найдена'
 	return price
 
-def csv_writing(data, path):
-	with open(path, 'a', newline='', encoding='utf-8') as f:
-		fieldnames = ['id', 'title', 'price']
-		writer = csv.DictWriter(f, delimiter=';', fieldnames=fieldnames)
-		writer.writerow(data)
-
-favorites_id = get_favorites()
-
-for fav_id in favorites_id:
-	url = MAIN_URL + str(fav_id)
-	html = get_html(url)
-	soup = bs(html, 'lxml')
-	title = soup.find('h1').text
-	sold_out = soup.find('h2', text=re.compile('товар закончился'))
-
-	if sold_out:
-		another_seller = soup.find('p', text=re.compile('есть у другого продавца'))
-		if another_seller:
-			price = get_price(soup, 'span.b5o4')
+def parse(favorites_id):
+	data = []
+	for fav_id in favorites_id:
+		url = MAIN_URL + str(fav_id)
+		html = get_html(url)
+		soup = bs(html, 'lxml')
+		title = soup.find('h1').text
+		sold_out = soup.find('h2', text=re.compile('товар закончился'))
+		if sold_out:
+			another_seller = soup.find('p', text=re.compile('есть у другого продавца'))
+			if another_seller:
+				price = get_price(soup, 'span.b5o4')
+			else:
+				price = 'нет в наличии'
 		else:
-			price = 'нет в наличии'
-	else:
-		price = get_price(soup, 'span.b3d.b3n5')
+			price = get_price(soup, 'span.b3d.b3n5')		
+		data.append({'id': fav_id, 'title': title, 'price': price})
+		print(title)
+	return data
 
-	current_date = date.today().strftime('%d-%m-%Y')
-	path = Path(current_date + '.csv')
-	data = {'id': fav_id, 'title': title, 'price': price}
-	csv_writing(data, path)
-	print(title)
+
+def get_table(path, sheet_index):
+	wb = xlrd.open_workbook(path)
+	ws = wb.sheet_by_index(sheet_index)
+	table = []
+	for row in range(ws.nrows):
+		curr_row = []
+		for col in range(ws.ncols):
+			cell = ws.cell(row, col)
+			value = cell.value
+			if cell.ctype == 3:  # xldate
+				converted_date = xlrd.xldate_as_tuple(value, wb.datemode)
+				value = datetime(*converted_date).strftime('%d.%m.%Y')
+			if row > 0 and col == 0: # первый столбец с id
+				value = int(value)
+			curr_row.append(value)
+		table.append(curr_row)
+	return table
+
+
+# favorites_id = get_favorites()
+# data = parse(favorites_id)
+table = get_table(XL_FILE, 0)
+current_date = date.today().strftime('%d.%m.%Y')
+
+for row in table:
+	print(row)
