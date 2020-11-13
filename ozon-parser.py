@@ -83,10 +83,25 @@ def get_table(path, sheet_index):
 	return table
 
 
-# favorites_id = get_favorites()
-# data = parse(favorites_id)
+favorites_id = get_favorites()
+data = parse(favorites_id)
 table = get_table(XL_FILE, 0)
 current_date = date.today().strftime('%d.%m.%Y')
 
-for row in table:
-	print(row)
+for i, row in enumerate(table):
+	if i == 0:
+		row.append(current_date)
+	else:
+		item = data[i-1]
+		row.append(item['price'])
+
+new_workbook = xlsxwriter.Workbook(XL_FILE)
+new_worksheet = new_workbook.add_worksheet()
+
+for row in range(len(table)):
+	for col in range(len(table[0])):
+		new_worksheet.write(row, col, table[row][col])
+new_workbook.close()
+
+
+
