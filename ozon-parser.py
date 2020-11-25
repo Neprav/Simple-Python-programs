@@ -22,7 +22,8 @@ def get_html_from_file(html_file):
 	return html
 
 def get_html(url):
-	r = requests.get(url, headers=HEADERS)	
+	r = requests.get(url, headers=HEADERS)
+	print(r.status_code)
 	return r.text
 
 def get_favorites():
@@ -36,20 +37,25 @@ def get_favorites():
 	favorites_id.remove('1984-173401194')
 	return favorites_id
 	
-def get_price(soup, selector):	
+def get_price(soup, class_):	
 	try:
-		price = soup.select_one(selector).text.split()[0] + ' руб.'
-	except:
-		price = 'цена не найдена'
+		price = soup.find('div', class_=class_).text.split()[0] + ' руб.'		
+	except AttributeError:
+		price = 'цена не найдена'		
 	return price
 
 def parse(favorites_id):
 	data = []
-	for fav_id in favorites_id:
+	for fav_id in favorites_id:		
 		url = MAIN_URL + str(fav_id)
+		print(url)
 		html = get_html(url)
 		soup = bs(html, 'lxml')
-		title = soup.find('h1').text
+		title = soup.find('h1')
+		if title:
+			title = title.text
+		else:
+			title = ''
 		sold_out = soup.find('h2', text=re.compile('товар закончился'))
 		if sold_out:
 			another_seller = soup.find('p', text=re.compile('есть у другого продавца'))
@@ -58,9 +64,9 @@ def parse(favorites_id):
 			else:
 				price = 'нет в наличии'
 		else:
-			price = get_price(soup, 'span.b3d.b3n5')		
+			price = get_price(soup, 'c9a3')
 		data.append({'id': fav_id, 'title': title, 'price': price})
-		print(title)
+		print(title, '\n')		
 	return data
 
 
@@ -82,26 +88,25 @@ def get_table(path, sheet_index):
 		table.append(curr_row)
 	return table
 
+def go():
+	favorites_id = get_favorites()
+	data = parse(favorites_id)
+	table = get_table(XL_FILE, 0)
+	current_date = date.today().strftime('%d.%m.%Y')
 
-favorites_id = get_favorites()
-data = parse(favorites_id)
-table = get_table(XL_FILE, 0)
-current_date = date.today().strftime('%d.%m.%Y')
+	for i, row in enumerate(table):
+		if i == 0:
+			row.append(current_date)
+		else:
+			item = data[i-1]
+			row.append(item['price'])
 
-for i, row in enumerate(table):
-	if i == 0:
-		row.append(current_date)
-	else:
-		item = data[i-1]
-		row.append(item['price'])
+	new_workbook = xlsxwriter.Workbook(XL_FILE)
+	new_worksheet = new_workbook.add_worksheet()
 
-new_workbook = xlsxwriter.Workbook(XL_FILE)
-new_worksheet = new_workbook.add_worksheet()
+	for row in range(len(table)):
+		for col in range(len(table[0])):
+			new_worksheet.write(row, col, table[row][col])
+	new_workbook.close()
 
-for row in range(len(table)):
-	for col in range(len(table[0])):
-		new_worksheet.write(row, col, table[row][col])
-new_workbook.close()
-
-
-
+go()
