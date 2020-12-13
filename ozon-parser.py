@@ -1,4 +1,5 @@
 from pathlib import *
+import os
 import requests
 from bs4 import BeautifulSoup as bs
 import re
@@ -12,7 +13,7 @@ MAIN_URL = 'https://www.ozon.ru/context/detail/id/'
 HEADERS = {
 	'user-agent' : 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36',
 	'accept-language': 'ru'}
-XL_FILE = 'my-favorites-ozon.xlsx'
+XL_FILE = Path('my-favorites-ozon.xlsx')
 
 
 
@@ -64,7 +65,7 @@ def parse(favorites_id):
 			else:
 				price = 'нет в наличии'
 		else:
-			price = get_price(soup, 'c9a3')
+			price = get_price(soup, 'c8q5 c8r0 b1k2')
 		data.append({'id': fav_id, 'title': title, 'price': price})
 		print(title, '\n')		
 	return data
@@ -89,6 +90,12 @@ def get_table(path, sheet_index):
 	return table
 
 def go():
+	try:
+		myfile = open(XL_FILE, 'r+') 
+	except IOError:
+		print('Открыт Excel файл!')
+		return
+
 	favorites_id = get_favorites()
 	data = parse(favorites_id)
 	table = get_table(XL_FILE, 0)
@@ -108,5 +115,6 @@ def go():
 		for col in range(len(table[0])):
 			new_worksheet.write(row, col, table[row][col])
 	new_workbook.close()
+	os.startfile(XL_FILE)
 
 go()
