@@ -14,7 +14,7 @@ count_files, count_dirs = 0, 0
 # Собираем путь 
 def path_assemble(path):
 	new_path = backup_dir
-	parts = list(path.parts[len_main_dir:])
+	parts = list(path.parts[len_main_dir:]) # отсекаем часть пути слева
 	for part in parts:
 		new_path = new_path / part
 	return new_path
