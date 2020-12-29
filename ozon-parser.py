@@ -7,15 +7,12 @@ from datetime import date, datetime
 import xlrd
 import xlsxwriter
 
-
 HTML_FILE = 'G:\\ozon\\OZON.ru-favorites.html'
 MAIN_URL = 'https://www.ozon.ru/context/detail/id/'
 HEADERS = {
 	'user-agent' : 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36',
 	'accept-language': 'ru'}
 XL_FILE = Path('my-favorites-ozon.xlsx')
-
-
 
 def get_html_from_file(html_file):
 	with open(html_file, 'r', encoding='utf-8') as f:
@@ -27,6 +24,7 @@ def get_html(url):
 	print(r.status_code)
 	return r.text
 
+# Получаем id нужных товаров из оффлайн-файла
 def get_favorites():
 	html = get_html_from_file(HTML_FILE)
 	soup = bs(html, 'lxml')	
@@ -36,7 +34,7 @@ def get_favorites():
 		link = div.get('href')		
 		favorites_id.append(Path(link).name)
 	favorites_id.remove('1984-173401194')
-	return favorites_id
+	return favorites_id # список вида ['148744120', '148744119', ...]
 	
 def get_price(soup, class_):	
 	try:
@@ -89,32 +87,56 @@ def get_table(path, sheet_index):
 		table.append(curr_row)
 	return table
 
-def go():
-	try:
-		myfile = open(XL_FILE, 'r+') 
-	except IOError:
-		print('Открыт Excel файл!')
-		return
+def first_start(data):
+	print('это первый запуск')
+	wb = xlsxwriter.Workbook(XL_FILE)
+	ws = wb.add_worksheet()
+	cell_format = wb.add_format()
+	cell_format.set_align('vcenter')
+	cell_format.set_text_wrap()
+	ws.set_column(0, 0, 15, cell_format)
+	ws.set_column(1, 1, 50, cell_format)
+	ws.write('A1', 'id')
+	ws.write('B1', 'Название')
+
+	for i, raw in enumerate(data):
+		ws.write(i+1, 0, int(raw['id']))
+		ws.write(i+1, 1, raw['title'])
+	wb.close()
+
+def main():
+	file_exists = XL_FILE.exists()
+	if file_exists:
+		try:
+			myfile = open(XL_FILE, 'r+') 
+		except IOError:
+			print('Открыт Excel файл!')
+			return
 
 	favorites_id = get_favorites()
-	data = parse(favorites_id)
-	table = get_table(XL_FILE, 0)
-	current_date = date.today().strftime('%d.%m.%Y')
+	data = parse(favorites_id) # data - список словарей
+	if not file_exists:
+		first_start(data)
 
-	for i, row in enumerate(table):
-		if i == 0:
-			row.append(current_date)
-		else:
-			item = data[i-1]
-			row.append(item['price'])
+	# table = get_table(XL_FILE, 0) # (имя файла, индекс листа)		
 
-	new_workbook = xlsxwriter.Workbook(XL_FILE)
-	new_worksheet = new_workbook.add_worksheet()
 
-	for row in range(len(table)):
-		for col in range(len(table[0])):
-			new_worksheet.write(row, col, table[row][col])
-	new_workbook.close()
-	os.startfile(XL_FILE)
+	# current_date = date.today().strftime('%d.%m.%Y')
 
-go()
+	# for i, row in enumerate(table):
+	# 	if i == 0:
+	# 		row.append(current_date)
+	# 	else:
+	# 		item = data[i-1]
+	# 		row.append(item['price'])
+
+	# new_workbook = xlsxwriter.Workbook(XL_FILE)
+	# new_worksheet = new_workbook.add_worksheet()
+
+	# for row in range(len(table)):
+	# 	for col in range(len(table[0])):
+	# 		new_worksheet.write(row, col, table[row][col])
+	# new_workbook.close()
+	# os.startfile(XL_FILE)
+
+main()
