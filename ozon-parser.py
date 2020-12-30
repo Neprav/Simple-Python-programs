@@ -34,11 +34,19 @@ def get_favorites():
 		link = div.get('href')		
 		favorites_id.append(Path(link).name)
 	favorites_id.remove('1984-173401194')
-	return favorites_id # список вида ['148744120', '148744119', ...]
+	return favorites_id#[:3] # список вида ['148744120', '148744119', ...]
 	
 def get_price(soup, class_):	
 	try:
-		price = soup.find('div', class_=class_).text.split()[0] + ' руб.'		
+		price = soup.find('div', class_=class_).text.split()
+		if price[1].isdigit():
+			price = price[0] + price[1] + ' руб.'
+		else:
+			price = price[0] + ' руб.'
+		# price2 = soup.find('div', class_=class_).text
+		# price2 = re.match(r'\d+\s\d+', price2).group(0)
+		# price2 = ''.join(price2.split())
+	
 	except AttributeError:
 		price = 'цена не найдена'		
 	return price
@@ -87,15 +95,23 @@ def get_table(path, sheet_index):
 		table.append(curr_row)
 	return table
 
-def first_start(data):
-	print('это первый запуск')
+def table_format(first_start=False, range_col=2):
 	wb = xlsxwriter.Workbook(XL_FILE)
 	ws = wb.add_worksheet()
-	cell_format = wb.add_format()
-	cell_format.set_align('vcenter')
-	cell_format.set_text_wrap()
-	ws.set_column(0, 0, 15, cell_format)
-	ws.set_column(1, 1, 50, cell_format)
+	common_format = wb.add_format()
+	common_format.set_align('left')
+	common_format.set_align('vcenter')
+	common_format.set_text_wrap()
+	header_format = wb.add_format({'bold': True})
+	ws.set_row(0, None, header_format)
+	ws.set_column(0, 0, 15, common_format)
+	ws.set_column(1, 1, 50, common_format)
+	if not first_start:
+		ws.set_column(2, range_col, 10, common_format)
+	return wb, ws
+
+def first_start(data):	
+	wb, ws = table_format(first_start=True)
 	ws.write('A1', 'id')
 	ws.write('B1', 'Название')
 
@@ -118,25 +134,24 @@ def main():
 	if not file_exists:
 		first_start(data)
 
-	# table = get_table(XL_FILE, 0) # (имя файла, индекс листа)		
+	table = get_table(XL_FILE, 0) # (имя файла, индекс листа)
+	current_date = date.today().strftime('%d.%m.%Y')
 
+	for i, row in enumerate(table):
+		if i == 0:
+			row.append(current_date)
+		else:
+			item = data[i-1]
+			row.append(item['price'])
 
-	# current_date = date.today().strftime('%d.%m.%Y')
+	range_col=len(table[0])
+	wb, ws = table_format(range_col=range_col)
 
-	# for i, row in enumerate(table):
-	# 	if i == 0:
-	# 		row.append(current_date)
-	# 	else:
-	# 		item = data[i-1]
-	# 		row.append(item['price'])
+	for row in range(len(table)):
+		for col in range(len(table[0])):
+			ws.write(row, col, table[row][col])
 
-	# new_workbook = xlsxwriter.Workbook(XL_FILE)
-	# new_worksheet = new_workbook.add_worksheet()
-
-	# for row in range(len(table)):
-	# 	for col in range(len(table[0])):
-	# 		new_worksheet.write(row, col, table[row][col])
-	# new_workbook.close()
-	# os.startfile(XL_FILE)
+	wb.close()
+	os.startfile(XL_FILE)
 
 main()
