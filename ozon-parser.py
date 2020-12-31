@@ -34,26 +34,22 @@ def get_favorites():
 		link = div.get('href')		
 		favorites_id.append(Path(link).name)
 	favorites_id.remove('1984-173401194')
-	return favorites_id#[:3] # список вида ['148744120', '148744119', ...]
+	return favorites_id # список вида ['148744120', '148744119', ...]
 	
-def get_price(soup, class_):	
+def get_price(soup, class_):
 	try:
 		price = soup.find('div', class_=class_).text.split()
 		if price[1].isdigit():
 			price = price[0] + price[1] + ' руб.'
 		else:
-			price = price[0] + ' руб.'
-		# price2 = soup.find('div', class_=class_).text
-		# price2 = re.match(r'\d+\s\d+', price2).group(0)
-		# price2 = ''.join(price2.split())
-	
+			price = price[0] + ' руб.'	
 	except AttributeError:
-		price = 'цена не найдена'		
+		price = 'цена не найдена'
 	return price
 
 def parse(favorites_id):
 	data = []
-	for fav_id in favorites_id:		
+	for fav_id in favorites_id:
 		url = MAIN_URL + str(fav_id)
 		print(url)
 		html = get_html(url)
@@ -73,9 +69,8 @@ def parse(favorites_id):
 		else:
 			price = get_price(soup, 'c8q5 c8r0 b1k2')
 		data.append({'id': fav_id, 'title': title, 'price': price})
-		print(title, '\n')		
+		print(title, '\n')
 	return data
-
 
 def get_table(path, sheet_index):
 	wb = xlrd.open_workbook(path)
@@ -110,7 +105,7 @@ def table_format(first_start=False, range_col=2):
 		ws.set_column(2, range_col, 10, common_format)
 	return wb, ws
 
-def first_start(data):	
+def first_start(data):
 	wb, ws = table_format(first_start=True)
 	ws.write('A1', 'id')
 	ws.write('B1', 'Название')
@@ -136,10 +131,18 @@ def main():
 
 	table = get_table(XL_FILE, 0) # (имя файла, индекс листа)
 	current_date = date.today().strftime('%d.%m.%Y')
-
+	last_column = table[0][len(table[0])-1]
+	rewriting = current_date == last_column
+	# Если столбец с текущей датой уже есть, будем его перезаписывать
+	# Если нет - добавим новый столбец
 	for i, row in enumerate(table):
-		if i == 0:
+		if i == 0 and rewriting:
+			pass
+		elif i == 0 and not rewriting:
 			row.append(current_date)
+		elif rewriting:
+			item = data[i-1]
+			row[len(row)-1] = item['price']
 		else:
 			item = data[i-1]
 			row.append(item['price'])
