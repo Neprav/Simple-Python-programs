@@ -40,7 +40,7 @@ def get_price(soup, class_):
 	try:
 		price = soup.find('div', class_=class_).text.split()
 		if price[1].isdigit():
-			price = price[0] + price[1] + ' руб.'
+			price = price[0] + price[1] + ' руб.' # Для ценников вида "1 350"
 		else:
 			price = price[0] + ' руб.'	
 	except AttributeError:
@@ -107,6 +107,7 @@ def table_format(first_start=False, range_col=2):
 
 def first_start(data):
 	wb, ws = table_format(first_start=True)
+	# Заполняем первые два столбца таблицы
 	ws.write('A1', 'id')
 	ws.write('B1', 'Название')
 
