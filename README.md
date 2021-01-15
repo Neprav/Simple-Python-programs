@@ -28,3 +28,11 @@
 ![ozon-parser screenshot](https://github.com/Neprav/Simple-Python-programs/blob/master/screenshots/ozon-parser.JPG)
 
 **Использованные модули:** pathlib, os, requests, bs4, re, datetime, xlrd, xlsxwriter
+
+## rename-date.py
+
+Переименовывает папки, меняя формат даты с dd.mm.yyyy на yyyy.mm.dd. Дату ставит в начале строки. Чистит лишние тире и пробелы в имени. 
+
+![rename-date screenshot](https://github.com/Neprav/Simple-Python-programs/blob/master/screenshots/rename-date.jpg)
+
+**Использованные модули:** pathlib, re
