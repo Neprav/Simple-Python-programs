@@ -5,8 +5,7 @@ path = Path(r'Путь')
 date_mask = r'\d{2}.\d{2}.\d{4}'
 
 for folder in path.iterdir():
-	if folder.is_dir():
-		path_parent = folder.parent
+	if folder.is_dir():		
 		name = folder.name
 		print('Было:  ', folder)
 		date = re.search(date_mask, name)
