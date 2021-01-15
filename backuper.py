@@ -1,5 +1,5 @@
 from pathlib import *
-import shutil
+import shutil # Нужен для копирования файлов
 
 dirs = [{
 'main_dir': Path('I:\\САЙТЫ ДЛЯ ФОТОГРАФОВ'),
