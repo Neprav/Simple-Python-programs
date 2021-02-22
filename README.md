@@ -31,8 +31,9 @@
 
 ## rename-date.py
 
-Переименовывает папки, меняя формат даты с dd.mm.yyyy на yyyy.mm.dd. Дату ставит в начале строки. Чистит лишние тире и пробелы в имени. 
+Переименовывает папки, меняя формат даты с dd.mm.yyyy на yyyy.mm.dd. Дату ставит в начале строки. Чистит лишние тире и пробелы в имени.
+Если в имени папки дата не найдена, добавляет в имя дату создания папки.
 
 ![rename-date screenshot](https://github.com/Neprav/Simple-Python-programs/blob/master/screenshots/rename-date.jpg)
 
-**Использованные модули:** pathlib, re
+**Использованные модули:** pathlib, re, datetime
