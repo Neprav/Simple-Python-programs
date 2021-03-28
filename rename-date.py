@@ -23,13 +23,14 @@ for folder in path.iterdir():
 		elif not re.search(date_good, name):
 			creation_time = folder.stat().st_ctime
 			creation_date = datetime.date.fromtimestamp(creation_time).strftime('%Y.%m.%d')
+			name = name.replace('—', '')
 			name = creation_date + ' — ' + name
 
 		else:
 			print('Стало: ', folder)
 			continue
 
-		name = re.sub(' +', ' ', name)
+		name = re.sub(' +', ' ', name) # удаляем лишние пробелы
 		new_path = folder.parent / name
 		print('Стало: ', new_path)
 		folder.rename(new_path)
